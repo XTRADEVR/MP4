@@ -1,131 +1,115 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="Strict JSON Engine & Compiler PWA - Deterministic JSON Generator">
-  <title>Strict JSON Studio | PWA</title>
-  
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  
-  <!-- Apple Touch Support -->
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strict JSON Engine - Online</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:monospace}
+body{background:#0a0e1e;color:#fff;padding:10px}
+.header{display:flex;justify-content:space-between;align-items:center;background:#151a30;padding:12px;border-radius:12px;border:1px solid #1a2040}
+.badge{background:#00c853;color:#fff;padding:4px 12px;border-radius:20px;font-size:.7rem}
+.box{background:#151a30;border:1px solid #1a2040;border-radius:12px;padding:12px;margin-top:10px}
+.label{color:#00d4ff;font-size:.75rem;margin-bottom:6px}
+textarea{width:100%;background:#0d1020;color:#a0f0a0;border:1px solid #2a3a80;border-radius:8px;padding:10px;font-size:.8rem;min-height:100px}
+textarea#inputData{color:#ffd700}
+.output{background:#000;border:1px solid #333;border-radius:8px;padding:12px;min-height:120px;color:#00ff88;word-break:break-all;font-size:.85rem;margin-top:10px}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;padding:12px;border-radius:10px;border:0;font-weight:900;cursor:pointer}
+.btn.white{background:#fff;color:#000}
+.btn.green{background:#00c853;color:#fff}
+.status{font-size:.7rem;color:#5a6ab0}
+</style>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="brand">
-        <span class="logo-icon">{ }</span>
-        <div>
-          <h1>Strict JSON Engine</h1>
-          <p class="subtitle">Deterministic Compiler & Schema Validator</p>
-        </div>
-      </div>
-      <div class="header-actions">
-        <span id="connection-status" class="badge badge-online">Online</span>
-        <button id="btn-install" class="btn btn-secondary hidden">Install App</button>
-      </div>
-    </header>
+<div class="header">
+<div>📄 <b>Strict JSON Engine</b><br><small style="color:#8aa0ff">Deterministic Compiler & Schema Validator</small></div>
+<div class="badge">Online</div>
+</div>
 
-    <!-- Main Workspace -->
-    <main class="workspace">
-      <!-- Input Section -->
-      <section class="panel input-panel">
-        <div class="panel-header">
-          <h2>1. Input Parameters</h2>
-          <div class="preset-selector">
-            <label for="schema-presets">Preset:</label>
-            <select id="schema-presets">
-              <option value="video">Video Metadata (Few-shot sample)</option>
-              <option value="product">E-Commerce Product</option>
-              <option value="empty">Kosong (Custom)</option>
-            </select>
-          </div>
-        </div>
+<div class="box">
+<div class="label">1. Input Parameters Video Metadata (Few-shot sample)</div>
+<div class="label">&lt;JSON_SCHEMA&gt; Definisikan struktur JSON target</div>
+<textarea id="schema">{"file_name": "string", "file_size": "number", "status": "enum['Proses','Dijeda','Selesai']", "is_private": "boolean", "pin": "string|null"}</textarea>
+<div class="label" style="margin-top:10px">&lt;INPUT_DATA&gt; Satu-satunya sumber kebenaran (Source of Truth)</div>
+<textarea id="inputData">File Saint Island.mp4 ukuran 39MB dari total 48MB status Proses download 45MB/s. Ini video pribadi dikunci PIN 1234.</textarea>
+</div>
 
-        <div class="form-group">
-          <label for="json-schema">
-            <span>&lt;JSON_SCHEMA&gt;</span>
-            <small>Definisikan struktur JSON target</small>
-          </label>
-          <textarea id="json-schema" spellcheck="false" placeholder='{"video_title": "string", "qualities": "array<{resolution: string, size_mb: number}>", "download_url": "string|null"}'></textarea>
-        </div>
+<div class="box">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div><b>2. Output Engine</b> <span class="status" id="bytes">0 bytes</span></div>
+<div class="btns" style="margin:0"><button class="btn white" onclick="generate()">Format: Minified</button><button class="btn green" onclick="copyJSON()">Salin JSON</button></div>
+</div>
+<div class="output" id="output">Output minified JSON murni akan tampil di sini...</div>
+</div>
 
-        <div class="form-group">
-          <label for="input-data">
-            <span>&lt;INPUT_DATA&gt;</span>
-            <small>Satu-satunya sumber kebenaran (Source of Truth)</small>
-          </label>
-          <textarea id="input-data" spellcheck="false" placeholder="Judul video Saint Island durasi 10:30. Tersedia 1080P 39.2MB dan 720P 20.6MB. Link: https://cdn.demo.com/saint.mp4"></textarea>
-        </div>
+<script>
+function generate(){
+  const schemaText = document.getElementById('schema').value;
+  const input = document.getElementById('inputData').value;
+  let result = {};
+  try {
+    // Parsing schema sederhana
+    const schema = JSON.parse(schemaText.replace(/'/g,'"'));
+    
+    // ENGINE DETERMINISTIK - TANPA HALUSINASI
+    // Hanya ekstrak dari INPUT_DATA
+    for(let key in schema){
+      let type = schema[key].toLowerCase();
+      let lowInput = input.toLowerCase();
+      
+      if(key.includes('file_name') || key.includes('file')){
+        let m = input.match(/([A-Za-z0-9 _-]+\.mp4)/i);
+        result[key] = m ? m[1] : null;
+      } else if(key.includes('file_size') || key.includes('size')){
+        let m = input.match(/(\d+)\s*MB/i);
+        result[key] = m ? parseInt(m[1]) : 0;
+      } else if(key.includes('status')){
+        if(/dijeda/i.test(input)) result[key]='Dijeda';
+        else if(/selesai/i.test(input)) result[key]='Selesai';
+        else if(/proses/i.test(input)) result[key]='Proses';
+        else result[key]=null;
+      } else if(key.includes('is_private') || key.includes('private')){
+        result[key] = /pribadi|private|dikunci|kunci/i.test(input);
+      } else if(key.includes('pin')){
+        let m = input.match(/PIN\s*(\d{3,6})/i);
+        result[key] = m ? m[1] : null;
+      } else if(key.includes('title')){
+        let m = input.match(/File\s+([A-Za-z0-9 ]+)/i);
+        result[key] = m ? m[1].trim() : null;
+      } else {
+        result[key]=null; // FAIL-SAFE ANTI HALUSINASI
+      }
+    }
+    
+    // Validasi tipe strictly
+    for(let k in result){
+      if(schema[k].includes('number') && typeof result[k]==='string'){
+        let n = parseInt(result[k]); if(!isNaN(n)) result[k]=n;
+      }
+    }
 
-        <!-- Engine / LLM Configuration -->
-        <details class="api-details">
-          <summary>Konfigurasi Engine & API (Opsional)</summary>
-          <div class="api-fields">
-            <div class="form-group">
-              <label for="api-key">LLM API Key (OpenAI / Gemini / Proxy):</label>
-              <input type="password" id="api-key" placeholder="sk-..." autocomplete="off">
-            </div>
-            <div class="form-group">
-              <label for="api-endpoint">Endpoint API:</label>
-              <input type="text" id="api-endpoint" value="https://api.openai.com/v1/chat/completions">
-            </div>
-            <div class="form-group">
-              <label for="model-name">Model:</label>
-              <input type="text" id="model-name" value="gpt-4o-mini">
-            </div>
-          </div>
-        </details>
+    const jsonStr = JSON.stringify(result);
+    document.getElementById('output').innerText = jsonStr;
+    document.getElementById('bytes').innerText = jsonStr.length + ' bytes • VALID JSON';
+    document.getElementById('output').style.color='#00ff88';
+  } catch(e){
+    document.getElementById('output').innerText = '{"error":"INVALID_SCHEMA","detail":"'+e.message+'"}';
+    document.getElementById('output').style.color='#ff4d4d';
+  }
+}
 
-        <div class="action-buttons">
-          <button id="btn-copy-prompt" class="btn btn-secondary">
-            📋 Salin Full Compiled Prompt
-          </button>
-          <button id="btn-execute" class="btn btn-primary">
-            ⚡ Eksekusi Engine
-          </button>
-        </div>
-      </section>
+function copyJSON(){
+  const text = document.getElementById('output').innerText;
+  if(text.includes('murni akan tampil')) return alert('Generate dulu KING!');
+  navigator.clipboard.writeText(text);
+  alert('✅ JSON disalin: '+text);
+}
 
-      <!-- Output Section -->
-      <section class="panel output-panel">
-        <div class="panel-header">
-          <h2>2. Output Engine</h2>
-          <div class="output-tools">
-            <span id="char-count" class="metric-text">0 bytes</span>
-            <button id="btn-format-toggle" class="btn btn-sm">Format: Minified</button>
-            <button id="btn-copy-output" class="btn btn-sm btn-accent">Salin JSON</button>
-          </div>
-        </div>
-
-        <div class="output-container">
-          <div id="status-banner" class="status-banner hidden"></div>
-          <textarea id="json-output" spellcheck="false" readonly placeholder="Output minified JSON murni akan ditampilkan di sini tanpa markdown atau teks penjelas..."></textarea>
-        </div>
-
-        <!-- Strict Validation Inspector -->
-        <div class="validation-inspector">
-          <h3>Strict Verification Checklist</h3>
-          <ul class="checklist">
-            <li id="check-syntax">Format JSON Valid: <span class="status">Menunggu...</span></li>
-            <li id="check-markdown">Bebas Markdown/Prose: <span class="status">Menunggu...</span></li>
-            <li id="check-minified">Status Minifikasi: <span class="status">Menunggu...</span></li>
-            <li id="check-failfast">Fail-Fast Handled: <span class="status">Menunggu...</span></li>
-          </ul>
-        </div>
-      </section>
-    </main>
-
-    <!-- Notification Toast -->
-    <div id="toast" class="toast">Prompt berhasil disalin!</div>
-  </div>
-
-  <script src="app.js"></script>
+// Auto generate pas buka
+window.onload = generate;
+document.getElementById('inputData').addEventListener('input', generate);
+document.getElementById('schema').addEventListener('input', generate);
+</script>
 </body>
-</html>
+                                                                                                    </html>
