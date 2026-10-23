@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Strict JSON Engine & Compiler PWA - Deterministic JSON Generator">
+  <title>Strict JSON Studio | PWA</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Apple Touch Support -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="logo-icon">{ }</span>
+        <div>
+          <h1>Strict JSON Engine</h1>
+          <p class="subtitle">Deterministic Compiler & Schema Validator</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span id="connection-status" class="badge badge-online">Online</span>
+        <button id="btn-install" class="btn btn-secondary hidden">Install App</button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- Input Section -->
+      <section class="panel input-panel">
+        <div class="panel-header">
+          <h2>1. Input Parameters</h2>
+          <div class="preset-selector">
+            <label for="schema-presets">Preset:</label>
+            <select id="schema-presets">
+              <option value="video">Video Metadata (Few-shot sample)</option>
+              <option value="product">E-Commerce Product</option>
+              <option value="empty">Kosong (Custom)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="json-schema">
+            <span>&lt;JSON_SCHEMA&gt;</span>
+            <small>Definisikan struktur JSON target</small>
+          </label>
+          <textarea id="json-schema" spellcheck="false" placeholder='{"video_title": "string", "qualities": "array<{resolution: string, size_mb: number}>", "download_url": "string|null"}'></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="input-data">
+            <span>&lt;INPUT_DATA&gt;</span>
+            <small>Satu-satunya sumber kebenaran (Source of Truth)</small>
+          </label>
+          <textarea id="input-data" spellcheck="false" placeholder="Judul video Saint Island durasi 10:30. Tersedia 1080P 39.2MB dan 720P 20.6MB. Link: https://cdn.demo.com/saint.mp4"></textarea>
+        </div>
+
+        <!-- Engine / LLM Configuration -->
+        <details class="api-details">
+          <summary>Konfigurasi Engine & API (Opsional)</summary>
+          <div class="api-fields">
+            <div class="form-group">
+              <label for="api-key">LLM API Key (OpenAI / Gemini / Proxy):</label>
+              <input type="password" id="api-key" placeholder="sk-..." autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label for="api-endpoint">Endpoint API:</label>
+              <input type="text" id="api-endpoint" value="https://api.openai.com/v1/chat/completions">
+            </div>
+            <div class="form-group">
+              <label for="model-name">Model:</label>
+              <input type="text" id="model-name" value="gpt-4o-mini">
+            </div>
+          </div>
+        </details>
+
+        <div class="action-buttons">
+          <button id="btn-copy-prompt" class="btn btn-secondary">
+            📋 Salin Full Compiled Prompt
+          </button>
+          <button id="btn-execute" class="btn btn-primary">
+            ⚡ Eksekusi Engine
+          </button>
+        </div>
+      </section>
+
+      <!-- Output Section -->
+      <section class="panel output-panel">
+        <div class="panel-header">
+          <h2>2. Output Engine</h2>
+          <div class="output-tools">
+            <span id="char-count" class="metric-text">0 bytes</span>
+            <button id="btn-format-toggle" class="btn btn-sm">Format: Minified</button>
+            <button id="btn-copy-output" class="btn btn-sm btn-accent">Salin JSON</button>
+          </div>
+        </div>
+
+        <div class="output-container">
+          <div id="status-banner" class="status-banner hidden"></div>
+          <textarea id="json-output" spellcheck="false" readonly placeholder="Output minified JSON murni akan ditampilkan di sini tanpa markdown atau teks penjelas..."></textarea>
+        </div>
+
+        <!-- Strict Validation Inspector -->
+        <div class="validation-inspector">
+          <h3>Strict Verification Checklist</h3>
+          <ul class="checklist">
+            <li id="check-syntax">Format JSON Valid: <span class="status">Menunggu...</span></li>
+            <li id="check-markdown">Bebas Markdown/Prose: <span class="status">Menunggu...</span></li>
+            <li id="check-minified">Status Minifikasi: <span class="status">Menunggu...</span></li>
+            <li id="check-failfast">Fail-Fast Handled: <span class="status">Menunggu...</span></li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">Prompt berhasil disalin!</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
